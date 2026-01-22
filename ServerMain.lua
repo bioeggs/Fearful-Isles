@@ -7,17 +7,6 @@ Main framework & event connection manager.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService"):GetAttribute("DoDebug") == true then
-		__print(script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local Players = game:GetService("Players")
@@ -50,7 +39,7 @@ function PlayerAdded(Player: Player)
 	
 	wait(2)
 	
-	-- MorphModule.MorphPlayer(Player, "SunshineDoll")
+	MorphModule.MorphPlayer(Player, "SunshineDoll")
 end
 function PlayerRemoving(Player: Player)
 	print("Player Removing: " .. Player.Name)
