@@ -48,10 +48,6 @@ function PlayerAdded(Player: Player)
 	DataModule.LoadData(Player)
 	GamepassModule.CheckVIP(Player)
 	BadgeModule.AwardMetOwner()
-	
-	wait(2)
-	
-	MorphModule.MorphPlayer(Player, "SunshineDoll")
 end
 function PlayerRemoving(Player: Player)
 	print("Player Removing: " .. Player.Name)
