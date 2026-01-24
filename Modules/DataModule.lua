@@ -161,4 +161,11 @@ DataModule.WipeData = function(Player: Player)
 	end
 end
 
+game:BindToClose(function()
+    for _, player in Players:GetPlayers() do
+        DataModule.SaveData(player)
+    end
+    task.wait(2)
+end)
+
 return DataModule
