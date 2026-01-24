@@ -8,17 +8,6 @@ Also has functions for leaderstats loading or reading.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService").Modules:GetAttribute("ModulesDebug") == true then
-		__print("- " .. script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local DataStore = game:GetService("DataStoreService"):GetDataStore("DataStore")
@@ -84,28 +73,55 @@ DataModule.LoadData = function(Player: Player)
 
 	print("Data for player \"" .. Name .. "\": " .. dataString)
 end
-script.Bindable.LoadData.Event:Connect(DataModule.LoadData)
 
 DataModule.SaveData = function(Player: Player)
+	local leaderstats = Player:FindFirstChild("leaderstats")
+	if not leaderstats then return end
+
 	local Uid = Player.UserId
 	local Data = {}
-	for _, value in Player.leaderstats:GetChildren() do
-		Data[value.Name] = value.Value
+	for _, value in leaderstats:GetChildren() do
+		if value:IsA("NumberValue") then
+			Data[value.Name] = value.Value
+		end
 	end
-	if Data == nil then
-		Data = DefaultData
+
+	local Retry = 3
+	while Retry > 0 do
+		local ok, err = pcall(function()
+			DataStore:SetAsync(Uid, Data)
+		end)
+		if ok then
+			break
+		end
+		Retry -= 1
+		task.wait(1)
 	end
-	DataStore:SetAsync(Uid, Data)
 end
-script.Bindable.SaveData.Event:Connect(DataModule.SaveData)
 
 DataModule.WipeData = function(Player: Player)
+	local leaderstats = Player:FindFirstChild("leaderstats")
+	if not leaderstats then return end
+
 	local Uid = Player.UserId
-	for _, value in Player.leaderstats:GetChildren() do
-		value.Value = DefaultData[value.Name]
+	local Data = table.clone(DefaultData)
+	for _, value in ipairs(leaderstats:GetChildren()) do
+		if value:IsA("NumberValue") and Data[value.Name] ~= nil then
+			value.Value = Data[value.Name]
+		end
 	end
-	DataStore:SetAsync(Uid, DefaultData)
+
+	local Retry = 3
+	while Retry > 0 do
+		local ok = pcall(function()
+			DataStore:SetAsync(Uid, Data)
+		end)
+		if ok then
+			break
+		end
+		Retry -= 1
+		task.wait(1)
+	end
 end
-script.Bindable.WipeData.Event:Connect(DataModule.WipeData)
 
 return DataModule
