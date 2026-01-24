@@ -7,9 +7,21 @@ Main framework & event connection manager.
 
 ]]
 
+--// PRINT OVERWRITE FOR LOGS //--
+
+local __print = print
+print = function(...)
+	if game:GetService("ServerScriptService"):GetAttribute("DoDebug") == true then
+		__print(script.Name .. ": " .. ... .. ".")
+	else
+		return
+	end
+end
+
 --// VARIABLES & SERVICES //--
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Teams = game:GetService("Teams")
 
@@ -48,8 +60,12 @@ function PlayerRemoving(Player: Player)
 end
 
 function GameLoop()
+	TimerModule.StartTimer(15)
+	MessageModule.Broadcast("Intermission")
+	task.wait(16)
+	
 	local PlayerCount = #Players:GetPlayers()
-	if PlayerCount >= 1 then -- change to > later
+	if PlayerCount >= 1 then -- change to > later	
 		TimerModule.StartTimer(15)
 		local Map = MapModule.PickRandomMap()
 		MessageModule.Broadcast("Map selected: " .. Map.Map.Name, 3)
@@ -74,9 +90,20 @@ function GameLoop()
 		MessageModule.Broadcast("Hide from the killer!", 5)
 		task.wait(16)
 		
-		TimerModule.StartTimer(180)
+		TimerModule.StartTimer(15)
 		MapModule.TeleportToMap({Killer}, Map)
 		MessageModule.Broadcast("Survive.", 5)
+		
+		while task.wait(5) do
+			if  TeamModule.GetTeamMemberCount(Teams.Survivors) < 1 or ReplicatedStorage.Timer.Value == 0 then
+				MessageModule.Broadcast("Round ended.", 5)
+				TeamModule.AssignTeam(Players:GetPlayers(), Teams.Lobby)
+				MapModule.TeleportToLobby(Players:GetPlayers())
+				break
+			end
+		end
+		
+		GameLoop()
 	else
 		MessageModule.Broadcast("Waiting for more players.", 6)
 		TimerModule.StartTimer(15, function()
