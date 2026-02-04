@@ -8,17 +8,6 @@ Also adds chat tags for admins or VIP players.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("StarterPlayer").Modules:GetAttribute("ClientDebug") == true then
-		__print("- " .. script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local Players = game:GetService("Players")
