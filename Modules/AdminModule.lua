@@ -8,6 +8,10 @@ If yes, give them admin permissions and a UI.
 
 ]]
 
+--// VARIABLES & SERVICES //--
+
+local Players = game:GetService("Players")
+
 --// MODULE //--
 
 local Whitelist = {
@@ -34,7 +38,11 @@ AdminModule.CheckAdmin = function(Player: Player)
 end
 
 AdminModule.GetAdminNames = function()
-	return Whitelist
+	local names = {}
+	for uid, _ in Whitelist do
+		table.insert(names, Players:GetNameFromUserIdAsync(uid) or "Unknown")
+	end
+	return names
 end
 
 return AdminModule
