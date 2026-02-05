@@ -7,17 +7,6 @@ Handles gamepasses for players.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService").Modules:GetAttribute("ModulesDebug") == true then
-		__print("- " .. script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local MarketplaceService = game:GetService("MarketplaceService")
@@ -38,6 +27,5 @@ GamepassModule.CheckVIP = function(Player: Player)
 		Player:SetAttribute("VIP", false)
 	end
 end
-script.Bindable.CheckVIP.Event:Connect(GamepassModule.CheckVIP)
 
 return GamepassModule
