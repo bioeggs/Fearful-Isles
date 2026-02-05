@@ -4,12 +4,12 @@ DataModule
 Script by: BioEggsHD (BallsHD)
 
 Handles data loading and saving through DataStores.
-Also has functions for leaderstats loading or reading.
 
 ]]
 
 --// VARIABLES & SERVICES //--
 
+local Players = game:GetService("Players")
 local DataStore = game:GetService("DataStoreService"):GetDataStore("DataStore_V1")
 
 local DefaultData = {
@@ -30,6 +30,7 @@ DataModule.LoadData = function(Player: Player)
 
 	local Data = nil
 	local Retry = 3
+	local IsLocked = false
 
 	while Retry > 0 do
 		local ok, result = pcall(function()
@@ -37,9 +38,11 @@ DataModule.LoadData = function(Player: Player)
 				oldData = oldData or {}
 				if oldData.__SessionId and oldData.__SessionId ~= SessionId then
 					if os.time() - (oldData.__LastUpdate or 0) < SESSION_TIMEOUT then
+						IsLocked = true
 						return nil
 					end
 				end
+
 				oldData.__SessionId = SessionId
 				oldData.__LastUpdate = os.time()
 
@@ -55,6 +58,9 @@ DataModule.LoadData = function(Player: Player)
 
 		if ok and Data then
 			break
+		elseif IsLocked then
+			Player:Kick("Your data is currently locked in another server. Please wait a few minutes.")
+			return nil
 		else
 			Retry -= 1
 			task.wait(1)
@@ -62,20 +68,8 @@ DataModule.LoadData = function(Player: Player)
 	end
 
 	if not Data then
-		Data = table.clone(DefaultData)
-	end
-
-	local leaderstats = Instance.new("Folder")
-	leaderstats.Name = "leaderstats"
-	leaderstats.Parent = Player
-
-	for statName, value in pairs(Data) do
-		if statName:sub(1, 2) ~= "__" then
-			local ValueObject = Instance.new("NumberValue")
-			ValueObject.Name = statName
-			ValueObject.Value = value
-			ValueObject.Parent = leaderstats
-		end
+		Player:Kick("DataStore failed to respond. Please rejoin.")
+		return nil
 	end
 
 	local dataString = ""
@@ -88,38 +82,43 @@ DataModule.LoadData = function(Player: Player)
 		dataString = dataString:sub(1, -3)
 	end
 	print("Data for player \"" .. Name .. "\": " .. dataString)
+
+	return Data
 end
 
-DataModule.SaveData = function(Player: Player)
-	local leaderstats = Player:FindFirstChild("leaderstats")
-	if not leaderstats then return end
-
+DataModule.SaveData = function(Player: Player, Data: {})
 	local Uid = Player.UserId
-	local Retry = 3
 
+	if not Data then
+		local LeaderstatsModule = require(script.Parent.LeaderstatsModule)
+		Data = LeaderstatsModule.PlayerStats[Uid]
+	end
+
+	if not Data then return end
+
+	local Retry = 3
 	while Retry > 0 do
 		local ok = pcall(function()
 			DataStore:UpdateAsync(Uid, function(oldData)
 				oldData = oldData or {}
 				if oldData.__SessionId ~= SessionId then
-					return nil
+					return nil 
 				end
 
-				for _, value in leaderstats:GetChildren() do
-					if value:IsA("NumberValue") then
-						oldData[value.Name] = value.Value
-					end
+				for stat, value in pairs(Data) do
+					oldData[stat] = value
 				end
 
 				oldData.__LastUpdate = os.time()
+				if not Players:FindFirstChild(Player.Name) then
+					oldData.__SessionId = nil
+				end
+
 				return oldData
 			end)
 		end)
 
-		if ok then
-			break
-		end
-
+		if ok then break end
 		Retry -= 1
 		task.wait(1)
 	end
@@ -136,10 +135,6 @@ DataModule.WipeData = function(Player: Player)
 		local ok = pcall(function()
 			DataStore:UpdateAsync(Uid, function(oldData)
 				oldData = oldData or {}
-				if oldData.__SessionId ~= SessionId then
-					return nil
-				end
-
 				for stat, value in pairs(DefaultData) do
 					oldData[stat] = value
 				end
@@ -147,9 +142,7 @@ DataModule.WipeData = function(Player: Player)
 				return oldData
 			end)
 		end)
-		if ok then
-			break
-		end
+		if ok then break end
 		Retry -= 1
 		task.wait(1)
 	end
@@ -162,10 +155,12 @@ DataModule.WipeData = function(Player: Player)
 end
 
 game:BindToClose(function()
-    for _, player in Players:GetPlayers() do
-        DataModule.SaveData(player)
-    end
-    task.wait(2)
+	for _, player in ipairs(Players:GetPlayers()) do
+		task.spawn(function()
+			DataModule.SaveData(player)
+		end)
+	end
+	task.wait(2)
 end)
 
 return DataModule
