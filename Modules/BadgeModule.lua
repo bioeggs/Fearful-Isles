@@ -7,17 +7,6 @@ Handles giving badges to players.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService").Modules:GetAttribute("ModulesDebug") == true then
-		__print("- " .. script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local Players = game:GetService("Players")
@@ -49,6 +38,5 @@ BadgeModule.AwardMetOwner = function()
 		end
 	end
 end
-script.Bindable.AwardMetOwner.Event:Connect(BadgeModule.AwardMetOwner)
 
 return BadgeModule
