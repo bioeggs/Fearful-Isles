@@ -26,7 +26,6 @@ MorphModule.MorphPlayer = function(Player: Player, MorphName: string)
 	local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 	local OldCFrame = HumanoidRootPart.CFrame
 	
-	-- Store original character for morph-back
 	Character.Parent = nil
 	
 	local Morph = MorphTemplate:Clone()
