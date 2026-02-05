@@ -15,8 +15,18 @@ local Players = game:GetService("Players")
 
 local KillerModule = {}
 
-KillerModule.PickRandomKiller = function()
-	return Players:GetPlayers()[math.random(1, #Players:GetPlayers())]
+KillerModule.PickRandomKiller = function(excludedPlayers: {number})
+	local AllPlayers = Players:GetPlayers()
+	local SelectedPlayer: Player = nil
+	while task.wait() do
+		local PlayerCount = #AllPlayers
+		if PlayerCount < 1 then return false end
+		
+		SelectedPlayer = AllPlayers[math.random(1, PlayerCount)]
+		if not table.find(excludedPlayers, SelectedPlayer.UserId) then
+			return true, SelectedPlayer
+		end
+	end
 end
 
 return KillerModule
