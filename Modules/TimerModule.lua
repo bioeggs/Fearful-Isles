@@ -7,17 +7,6 @@ Handles starting timers.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService"):GetAttribute("DoDebug") == true then
-		__print(script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -33,8 +22,9 @@ local heartbeatConn: RBXScriptConnection?
 local TimerModule = {}
 
 TimerModule.StartTimer = function(duration: number, callback: (any) -> (any)?)
-	if running then
-		return
+	if heartbeatConn then
+		heartbeatConn:Disconnect()
+		heartbeatConn = nil
 	end
 
 	running = true
@@ -50,10 +40,11 @@ TimerModule.StartTimer = function(duration: number, callback: (any) -> (any)?)
 		TimeLeft.Value = math.max(0, TimeLeft.Value - dt)
 
 		if TimeLeft.Value <= 0 then
-			heartbeatConn:Disconnect()
-			heartbeatConn = nil
+			if heartbeatConn then
+				heartbeatConn:Disconnect()
+				heartbeatConn = nil
+			end
 			running = false
-
 			TimeLeft.Value = 0
 
 			if callback then
@@ -62,6 +53,5 @@ TimerModule.StartTimer = function(duration: number, callback: (any) -> (any)?)
 		end
 	end)
 end
-script.Bindable.StartTimer.Event:Connect(TimerModule.StartTimer)
 
 return TimerModule
