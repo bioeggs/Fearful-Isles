@@ -7,16 +7,9 @@ Handles assigning players to the "Lobby", "Survivors" or "Killer" teams.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
+--// VARIABLES & SERVICES //--
 
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService"):GetAttribute("DoDebug") == true then
-		__print(script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
+local Players = game:GetService("Players")
 
 --// MODULE //--
 
@@ -27,6 +20,15 @@ TeamModule.AssignTeam = function(Players: {Player}, Team: Team)
 		Player.Team = Team
 	end
 end
-script.Bindable.AssignTeam.Event:Connect(TeamModule.AssignTeam)
+
+TeamModule.GetTeamMemberCount = function(Team: Team)
+	local count = 0
+	for _, Player in Players:GetPlayers() do
+		if Player.Team == Team then
+			count += 1
+		end
+	end
+	return count
+end
 
 return TeamModule
