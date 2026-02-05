@@ -7,17 +7,6 @@ Handles morphing for players.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService").Modules:GetAttribute("ModulesDebug") == true then
-		__print("- " .. script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
-
 --// VARIABLES & SERVICES //--
 
 local Morphs = script.Morphs
