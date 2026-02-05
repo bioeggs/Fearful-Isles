@@ -7,23 +7,13 @@ Handles map selection and teleportation.
 
 ]]
 
---// PRINT OVERWRITE FOR LOGS //--
-
-local __print = print
-print = function(...)
-	if game:GetService("ServerScriptService").Modules:GetAttribute("ModulesDebug") == true then
-		__print("- " .. script.Name .. ": " .. ... .. ".")
-	else
-		return
-	end
-end
 
 --// VARIABLES & SERVICES //--
 
 local MapFolder = workspace.Maps
 local Maps = {
-	TestMap1 = {
-		Map = MapFolder.TestMap1
+	["DustFell Ruins"] = {
+		Map = MapFolder["DustFell Ruins"]
 	},
 	TestMap2 = {
 		Map = MapFolder.TestMap2
@@ -60,7 +50,6 @@ MapModule.PickRandomMap = function()
 	end
 	return MapTable[math.random(1, #MapTable)]
 end
-script.Bindable.PickRandomMap.OnInvoke = MapModule.PickRandomMap
 
 MapModule.PickRandomMaps = function(amount: number)
 	local MapTable, PickedMaps = {}, {}
@@ -74,7 +63,6 @@ MapModule.PickRandomMaps = function(amount: number)
 	end
 	return PickedMaps
 end
-script.Bindable.PickRandomMaps.OnInvoke = MapModule.PickRandomMaps
 
 MapModule.TeleportToMap = function(Players: {Player}, map: Model)
 	local SpawnLocations = map.Map:WaitForChild("SpawnLocations"):GetChildren()
@@ -90,6 +78,26 @@ MapModule.TeleportToMap = function(Players: {Player}, map: Model)
 		Character:PivotTo(SpawnLocations[spawnIndex].CFrame)
 	end
 end
-script.Bindable.TeleportToMap.Event:Connect(MapModule.TeleportToMap)
+
+MapModule.TeleportToLobby = function(Players: {Player})
+	for _, Player in Players do
+		local Character = Player.Character or Player.CharacterAdded:Wait()
+		Character:PivotTo(workspace.Lobby.SpawnLocation.CFrame + Vector3.yAxis)
+	end
+end
+
+MapModule.PlayAmbience = function(Map: Model)
+	local Ambience = Map:FindFirstChildOfClass("Sound")
+	if Ambience and Ambience.Name == "Ambience" and not Ambience.IsPlaying then
+		Ambience:Play()
+	end
+end
+
+MapModule.StopAmbience = function(Map: Model)
+	local Ambience = Map:FindFirstChildOfClass("Sound")
+	if Ambience and Ambience.Name == "Ambience" and Ambience.IsPlaying then
+		Ambience:Stop()
+	end
+end
 
 return MapModule
