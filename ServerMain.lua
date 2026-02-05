@@ -49,6 +49,7 @@ local function PlayerRemoving(Player: Player)
 end
 
 local function GameLoop()
+	local LastKiller: number = nil
 	while true do 
 		MessageModule.Broadcast("Intermission", 14)
 		TimerModule.StartTimer(15)
@@ -64,7 +65,12 @@ local function GameLoop()
 			MessageModule.Broadcast("Map selected: " .. Map.Map.Name, 4)
 			task.wait(4)
 
-			local Killer = KillerModule.PickRandomKiller()
+			local ExcludedForKiller = {} -- add logic later for turning killer off in settings
+			if LastKiller ~= nil then
+				table.insert(ExcludedForKiller, LastKiller)
+			end
+
+			local Killer = KillerModule.PickRandomKiller(ExcludedForKiller)
 
 			if not Killer or not Killer.Parent then
 				MessageModule.Broadcast("Killer left during selection. Restarting.", 3)
@@ -73,6 +79,7 @@ local function GameLoop()
 			end
 
 			MessageModule.Broadcast("Killer selected: " .. Killer.Name, 4)
+			LastKiller = Killer.UserId
 			task.wait(4)
 
 			local Survivors = {}
