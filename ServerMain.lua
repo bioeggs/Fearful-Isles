@@ -137,6 +137,7 @@ local function GameLoop()
 				end
 			end
 
+			MorphModule.MorphBack(Killer
 			MapModule.StopAmbience(Map)
 			TeamModule.AssignTeam(Players:GetPlayers(), Teams.Lobby)
 			MapModule.TeleportToLobby(Players:GetPlayers())
